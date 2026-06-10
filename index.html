@@ -93,7 +93,7 @@ h2{font-family:var(--display);font-weight:600;font-size:clamp(26px,3.6vw,38px);l
 .step-toggle{font-family:var(--display);font-size:12.5px;color:var(--fg-dim);border:1px solid var(--line2);border-radius:999px;padding:6px 13px;transition:all .25s}
 .step.open .step-toggle{background:var(--lime);color:var(--ink);border-color:var(--lime)}
 .step-body{max-height:0;overflow:hidden;transition:max-height .45s var(--e)}
-.step.open .step-body{max-height:600px}
+.step.open .step-body{max-height:1600px}
 .step-bi{padding:2px 24px 24px;border-top:1px solid var(--line)}
 .step-bi>p{color:var(--fg-dim);font-size:14.5px;margin:18px 0}
 .io{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:18px}
@@ -103,6 +103,16 @@ h2{font-family:var(--display);font-weight:600;font-size:clamp(26px,3.6vw,38px);l
 .btn-copy{font-family:var(--display);font-weight:600;font-size:13.5px;background:var(--panel2);border:1px solid var(--line2);color:var(--fg);padding:11px 20px;border-radius:10px;cursor:pointer;transition:all .28s var(--e);display:inline-flex;gap:8px;align-items:center}
 .btn-copy:hover{border-color:var(--lime);color:var(--lime)}
 .btn-copy.done{background:var(--lime);color:var(--ink);border-color:var(--lime)}
+.time-row{display:flex;align-items:center;gap:14px;margin:18px 0}
+.time-box{display:flex;flex-direction:column;gap:3px;background:var(--panel2);border:1px solid var(--line);border-radius:10px;padding:11px 16px;flex:1}
+.time-box.lime{border-color:var(--lime);background:rgba(166,240,0,.07)}
+.time-box .tl{font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--fg-dim)}
+.time-box .tv{font-family:var(--display);font-weight:600;font-size:15px;color:var(--fg)}
+.time-box.lime .tv{color:var(--lime)}
+.time-arrow{color:var(--fg-dim);font-size:18px}
+.prompt-prev{margin:16px 0;border:1px solid var(--line);border-radius:10px;background:#0b0e0a;overflow:hidden}
+.pp-label{font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--lime);padding:10px 14px;border-bottom:1px solid var(--line);font-family:var(--display);font-weight:600}
+.prompt-prev pre{margin:0;padding:14px;font-family:'SFMono-Regular',Consolas,monospace;font-size:11.5px;line-height:1.55;color:var(--fg-mut);white-space:pre-wrap;max-height:200px;overflow-y:auto}
 .foot-note{font-size:12.5px;color:var(--fg-mut)}
 .save-pill{margin-left:auto;font-family:var(--display);font-size:12.5px;color:var(--lime);background:rgba(166,240,0,.1);border:1px solid rgba(166,240,0,.25);padding:6px 12px;border-radius:999px}
 @media(max-width:560px){.save-pill{margin-left:0}}
@@ -203,7 +213,7 @@ footer .wrap{display:flex;justify-content:space-between;align-items:center;flex-
       </div>
       <div class="why">
         <div class="why-card"><div class="ic"><svg width="15" height="15" viewBox="0 0 16 16" fill="none"><path d="M8 1v14M1 8h14" stroke="#A6F000" stroke-width="2" stroke-linecap="round"/></svg></div><h4>Por qué no saltarse ninguno</h4><p>Diseñar sin estrategia da algo genérico. Un sistema de diseño sin fundamento se improvisa. Una estructura sin criterio no convierte. Y sin QA, el diseño se pierde en producción.</p></div>
-        <div class="why-card"><div class="ic"><svg width="15" height="15" viewBox="0 0 16 16" fill="none"><path d="M2 8l4 4 8-9" stroke="#A6F000" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></div><h4>Dirigido, no automático</h4><p>En cada paso hay un punto donde tú validas la hipótesis, eliges la dirección y apruebas lo que ninguna IA debe decidir sola. Esa dirección con criterio es lo que evita la plantilla.</p></div>
+        <div class="why-card"><div class="ic"><svg width="15" height="15" viewBox="0 0 16 16" fill="none"><path d="M2 8l4 4 8-9" stroke="#A6F000" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></div><h4>Dos modos, eliges al dar el brief</h4><p>Modo rápido: la cadena corre sola de punta a punta, sin detenerse, y entrega todo listo. Modo interactivo: cuando hay más tiempo, se detiene en cada sección para que elijas entre alternativas de layout y afines el resultado.</p></div>
       </div>
       <div class="stepline" id="stepline"></div>
     </div>
@@ -867,19 +877,20 @@ CÓMO TE COMPORTAS
 
 
 const PASOS=[
-  {id:'eslabon1',n:'1',t:'Fundamento estratégico',sub:'Estratega de marca senior',inp:'el brief',out:'ADN, research, UVP, ICP y arquitectura',save:'≈ 3–5 días',
+  {id:'eslabon1',n:'1',t:'Fundamento estratégico',sub:'Estrategia, research y marca',inp:'el brief',out:'ADN, research, UVP, ICP y arquitectura',real:'3 a 5 días',save:'minutos',
    d:'Investiga el mercado de verdad, parte del dolor del usuario para encontrar la diferenciación y define el ADN de marca. Se detiene en un punto de decisión humano antes de avanzar. Su obsesión: que nada salga genérico y nada se invente.'},
-  {id:'eslabon2',n:'2',t:'Sistema de diseño',sub:'Diseñador de sistemas senior',inp:'la estrategia',out:'sistema visual + versión técnica',save:'≈ 1–2 sem',
+  {id:'eslabon2',n:'2',t:'Sistema de diseño',sub:'Diseño visual y versión técnica',inp:'la estrategia',out:'sistema visual + versión técnica',real:'1 a 2 semanas',save:'minutos',
    d:'Deriva el sistema de diseño del ADN, no del gusto. Cada componente lleva el carácter de la marca en su materia, no solo en su color. La versión técnica es la fuente de verdad que luego usa el QA.'},
-  {id:'eslabon3',n:'3',t:'Estructura y contenido',sub:'Diseñador web y copywriter senior',inp:'estrategia + diseño',out:'layout, copy y prototipo',save:'≈ 3–5 días',
-   d:'Arma las páginas con criterio senior: jerarquía, ritmo, tensión y composición con intención, evitando los patrones que delatan a la IA. El copy pasa por un filtro anti-cliché y respeta el sistema de diseño al pie.'},
-  {id:'eslabon4',n:'4',t:'Verificación de fidelidad',sub:'Ingeniero de QA visual',inp:'diseño + lo construido',out:'reporte de hallazgos',save:'QA recurrente',
+  {id:'eslabon3',n:'3',t:'Estructura y contenido',sub:'Layout, copy y prototipo',inp:'estrategia + diseño',out:'layout, copy y prototipo',real:'3 a 5 días',save:'minutos',
+   d:'Arma las páginas con criterio de diseño: jerarquía, ritmo, tensión y composición con intención, evitando los patrones que delatan a la IA. El copy pasa por un filtro anti-cliché y respeta el sistema de diseño al pie.'},
+  {id:'eslabon4',n:'4',t:'Verificación de fidelidad',sub:'QA visual contra el diseño',inp:'diseño + lo construido',out:'reporte de hallazgos',real:'horas por ronda, recurrente',save:'minutos',
    d:'Cierra el ciclo: compara el render real contra el sistema de diseño y reporta cada desviación. Es agnóstico al stack, funciona igual en WordPress, React o PHP porque revisa el resultado renderizado, no el código.'},
 ];
 
 const sl=document.getElementById('stepline');
 PASOS.forEach(p=>{
   const d=document.createElement('div');d.className='step';
+  const preview=(PROMPTS[p.id]||'').slice(0,1100);
   d.innerHTML=`<div class="step-h" onclick="this.parentElement.classList.toggle('open')">
     <div class="step-n">${p.n}</div>
     <div class="step-t"><h3>${p.t}</h3><div class="sub">${p.sub}</div></div>
@@ -888,10 +899,15 @@ PASOS.forEach(p=>{
   <div class="step-body"><div class="step-bi">
     <p>${p.d}</p>
     <div class="io"><span class="chip">entra: <b>${p.inp}</b></span><span class="chip">sale: <b>${p.out}</b></span></div>
+    <div class="time-row">
+      <div class="time-box"><span class="tl">Tradicional</span><span class="tv">${p.real}</span></div>
+      <div class="time-arrow">→</div>
+      <div class="time-box lime"><span class="tl">Con Cauce</span><span class="tv">${p.save}</span></div>
+    </div>
+    <div class="prompt-prev"><div class="pp-label">Vista del prompt</div><pre>${preview.replace(/</g,'&lt;')}…</pre></div>
     <div class="step-foot">
-      <button class="btn-copy" data-id="${p.id}">Copiar prompt</button>
-      <span class="foot-note">Pégalo en Claude y dale tu brief</span>
-      <span class="save-pill">${p.save}</span>
+      <button class="btn-copy" data-id="${p.id}">Copiar prompt completo</button>
+      <span class="foot-note">Pégalo en Claude u otra IA y dale tu brief</span>
     </div>
   </div></div>`;
   sl.appendChild(d);
