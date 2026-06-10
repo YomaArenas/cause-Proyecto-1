@@ -1,0 +1,932 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Cauce — Diseña con criterio, de la estrategia a producción</title>
+<meta name="description" content="Cauce es una cadena de 4 prompts encadenados que comprime semanas de estrategia, diseño y QA en un flujo dirigido. Sin saltarse ningún paso. Probado en un negocio real.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --lime:#A6F000;--lime-dim:#7db300;--ink:#0b0f0c;--carbon:#11161300;
+  --panel:#141a16;--panel2:#1a221d;--line:#283129;--line2:#39463c;
+  --fg:#eef3ee;--fg-dim:#9aa89d;--fg-mut:#6b766e;
+  --display:'Space Grotesk',sans-serif;--body:'Inter',sans-serif;
+  --e:cubic-bezier(.22,1,.36,1);
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{font-family:var(--body);background:var(--ink);color:var(--fg);line-height:1.55;-webkit-font-smoothing:antialiased}
+.wrap{max-width:1080px;margin:0 auto;padding:0 26px}
+a{color:inherit;text-decoration:none}
+::selection{background:var(--lime);color:var(--ink)}
+
+/* texture: subtle grid */
+body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(var(--line) 1px,transparent 1px),linear-gradient(90deg,var(--line) 1px,transparent 1px);background-size:64px 64px;opacity:.18;pointer-events:none;z-index:0;mask-image:radial-gradient(ellipse 80% 60% at 50% 0%,#000 30%,transparent 75%)}
+.app{position:relative;z-index:1}
+
+/* nav */
+nav{position:sticky;top:0;z-index:50;background:rgba(11,15,12,.8);backdrop-filter:blur(14px);border-bottom:1px solid var(--line)}
+nav .wrap{display:flex;align-items:center;justify-content:space-between;height:60px}
+.brand{display:flex;align-items:center;gap:11px;font-family:var(--display);font-weight:600;font-size:19px;letter-spacing:-.01em}
+.brand .mark{width:22px;height:22px;position:relative;display:inline-block}
+.brand .mark svg{display:block}
+.tabs{display:flex;gap:6px;background:var(--panel);border:1px solid var(--line);border-radius:11px;padding:4px}
+.tab{font-family:var(--display);font-size:13.5px;font-weight:500;color:var(--fg-dim);padding:7px 15px;border-radius:8px;cursor:pointer;transition:all .25s var(--e);border:0;background:transparent}
+.tab:hover{color:var(--fg)}
+.tab.active{background:var(--lime);color:var(--ink);font-weight:600}
+@media(max-width:720px){.tabs{display:none}}
+.nav-tag{font-family:var(--display);font-size:12px;color:var(--fg-mut);border:1px solid var(--line);padding:6px 12px;border-radius:999px}
+
+/* panels */
+.screen{display:none;animation:fade .5s var(--e)}
+.screen.active{display:block}
+@keyframes fade{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
+
+/* hero */
+.hero{padding:70px 0 64px;position:relative}
+.hero-glow{position:absolute;width:560px;height:360px;left:50%;top:-40px;transform:translateX(-50%);background:radial-gradient(ellipse,rgba(166,240,0,.14) 0%,transparent 68%);pointer-events:none}
+.hero .wrap{position:relative}
+.pill{display:inline-flex;align-items:center;gap:9px;font-family:var(--display);font-size:12.5px;font-weight:500;letter-spacing:.04em;color:var(--lime);border:1px solid var(--line2);background:var(--panel);padding:7px 15px;border-radius:999px;margin-bottom:26px}
+.pill::before{content:'';width:6px;height:6px;border-radius:50%;background:var(--lime);box-shadow:0 0 10px var(--lime)}
+h1{font-family:var(--display);font-weight:600;font-size:clamp(34px,5.4vw,60px);line-height:1.04;letter-spacing:-.025em;max-width:17ch}
+h1 .hl{color:var(--lime)}
+.lead{font-size:clamp(16px,1.9vw,19px);color:var(--fg-dim);max-width:62ch;margin:24px 0 0;line-height:1.6}
+.lead b{color:var(--fg);font-weight:600}
+.hero-actions{display:flex;gap:13px;margin-top:34px;flex-wrap:wrap}
+.btn{font-family:var(--display);font-weight:600;font-size:14.5px;padding:14px 26px;border-radius:11px;cursor:pointer;border:1px solid transparent;transition:all .3s var(--e)}
+.btn-pri{background:var(--lime);color:var(--ink)}
+.btn-pri:hover{transform:translateY(-2px);box-shadow:0 12px 34px rgba(166,240,0,.3)}
+.btn-gho{background:var(--panel);color:var(--fg);border-color:var(--line2)}
+.btn-gho:hover{background:var(--panel2);transform:translateY(-2px)}
+
+/* hero stats inline */
+.hstats{display:flex;gap:40px;margin-top:54px;flex-wrap:wrap;padding-top:32px;border-top:1px solid var(--line)}
+.hstat .n{font-family:var(--display);font-weight:600;font-size:30px;color:var(--fg);line-height:1;letter-spacing:-.02em}
+.hstat .n i{font-style:normal;color:var(--lime)}
+.hstat .l{font-size:13px;color:var(--fg-mut);margin-top:7px;max-width:20ch}
+
+/* section title small */
+.eyebrow{font-family:var(--display);font-size:12.5px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:var(--lime);margin-bottom:14px}
+h2{font-family:var(--display);font-weight:600;font-size:clamp(26px,3.6vw,38px);line-height:1.1;letter-spacing:-.02em}
+.sec-intro{max-width:64ch;margin-bottom:42px}
+.sec-intro p{color:var(--fg-dim);font-size:16.5px;margin-top:14px}
+
+/* steps screen */
+.steps{padding:58px 0 70px}
+.why{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:44px}
+@media(max-width:720px){.why{grid-template-columns:1fr}}
+.why-card{background:var(--panel);border:1px solid var(--line);border-radius:13px;padding:20px 22px}
+.why-card .ic{width:30px;height:30px;border-radius:8px;background:rgba(166,240,0,.12);display:flex;align-items:center;justify-content:center;margin-bottom:13px}
+.why-card h4{font-family:var(--display);font-weight:600;font-size:15.5px;margin-bottom:6px}
+.why-card p{font-size:13.5px;color:var(--fg-dim)}
+
+.stepline{display:flex;flex-direction:column;gap:12px}
+.step{background:var(--panel);border:1px solid var(--line);border-radius:14px;overflow:hidden;transition:border-color .3s var(--e)}
+.step:hover{border-color:var(--line2)}
+.step-h{display:grid;grid-template-columns:auto 1fr auto;gap:18px;align-items:center;padding:20px 24px;cursor:pointer}
+.step-n{font-family:var(--display);font-weight:600;font-size:15px;color:var(--ink);background:var(--lime);width:30px;height:30px;border-radius:8px;display:flex;align-items:center;justify-content:center}
+.step-t h3{font-family:var(--display);font-weight:600;font-size:17.5px;letter-spacing:-.01em}
+.step-t .sub{font-size:13px;color:var(--fg-mut);margin-top:3px}
+.step-toggle{font-family:var(--display);font-size:12.5px;color:var(--fg-dim);border:1px solid var(--line2);border-radius:999px;padding:6px 13px;transition:all .25s}
+.step.open .step-toggle{background:var(--lime);color:var(--ink);border-color:var(--lime)}
+.step-body{max-height:0;overflow:hidden;transition:max-height .45s var(--e)}
+.step.open .step-body{max-height:600px}
+.step-bi{padding:2px 24px 24px;border-top:1px solid var(--line)}
+.step-bi>p{color:var(--fg-dim);font-size:14.5px;margin:18px 0}
+.io{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:18px}
+.chip{font-size:12.5px;padding:6px 12px;border-radius:8px;background:var(--panel2);border:1px solid var(--line);color:var(--fg-dim)}
+.chip b{color:var(--lime);font-weight:600}
+.step-foot{display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+.btn-copy{font-family:var(--display);font-weight:600;font-size:13.5px;background:var(--panel2);border:1px solid var(--line2);color:var(--fg);padding:11px 20px;border-radius:10px;cursor:pointer;transition:all .28s var(--e);display:inline-flex;gap:8px;align-items:center}
+.btn-copy:hover{border-color:var(--lime);color:var(--lime)}
+.btn-copy.done{background:var(--lime);color:var(--ink);border-color:var(--lime)}
+.foot-note{font-size:12.5px;color:var(--fg-mut)}
+.save-pill{margin-left:auto;font-family:var(--display);font-size:12.5px;color:var(--lime);background:rgba(166,240,0,.1);border:1px solid rgba(166,240,0,.25);padding:6px 12px;border-radius:999px}
+@media(max-width:560px){.save-pill{margin-left:0}}
+
+/* proof screen */
+.proof{padding:58px 0 70px}
+.proof-switch{display:inline-flex;gap:5px;background:var(--panel);border:1px solid var(--line);border-radius:11px;padding:4px;margin-bottom:24px}
+.psw{font-family:var(--display);font-size:13.5px;font-weight:500;color:var(--fg-dim);padding:9px 18px;border-radius:8px;cursor:pointer;border:0;background:transparent;transition:all .25s var(--e)}
+.psw.active{background:var(--lime);color:var(--ink);font-weight:600}
+.frame{border:1px solid var(--line2);border-radius:15px;overflow:hidden;box-shadow:0 26px 70px rgba(0,0,0,.5);background:#000}
+.frame-bar{display:flex;align-items:center;gap:7px;padding:12px 16px;background:var(--panel);border-bottom:1px solid var(--line)}
+.fdot{width:10px;height:10px;border-radius:50%}
+.frame-bar .url{margin-left:12px;font-family:var(--display);font-size:12.5px;color:var(--fg-mut)}
+.frame iframe{width:100%;height:600px;border:0;display:block;background:#fff}
+.proof-cap{display:flex;gap:18px;flex-wrap:wrap;margin-top:22px}
+.pc{flex:1;min-width:220px;font-size:13.5px;color:var(--fg-dim)}
+.pc b{color:var(--fg);font-family:var(--display);font-weight:600;display:block;margin-bottom:4px;font-size:14.5px}
+
+/* impact screen */
+.impact{padding:58px 0 80px}
+.impact-hero{text-align:center;padding:30px 0 50px}
+.impact-hero .big{font-family:var(--display);font-weight:600;font-size:clamp(44px,9vw,92px);line-height:.95;letter-spacing:-.03em;margin:16px 0}
+.impact-hero .big i{font-style:normal;color:var(--lime)}
+.impact-hero p{color:var(--fg-dim);font-size:17px;max-width:52ch;margin:0 auto}
+.imp-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px}
+@media(max-width:720px){.imp-grid{grid-template-columns:1fr}}
+.imp-card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:26px}
+.imp-card .k{font-family:var(--display);font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--lime);font-weight:600;margin-bottom:12px}
+.imp-card h4{font-family:var(--display);font-weight:600;font-size:19px;margin-bottom:9px;letter-spacing:-.01em}
+.imp-card p{font-size:14.5px;color:var(--fg-dim)}
+.breakdown{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-top:14px}
+@media(max-width:720px){.breakdown{grid-template-columns:1fr 1fr}}
+.bd{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:18px;text-align:center}
+.bd .s{font-family:var(--display);font-size:11.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--fg-mut);font-weight:600}
+.bd .v{font-family:var(--display);font-weight:600;font-size:20px;color:var(--fg);margin:8px 0 3px;letter-spacing:-.01em}
+.bd .x{font-size:12px;color:var(--fg-dim)}
+
+/* closing */
+.closing{text-align:center;padding:54px 30px;background:linear-gradient(180deg,var(--panel) 0%,var(--ink) 100%);border:1px solid var(--line);border-radius:18px;margin-top:30px}
+.closing h2{margin-bottom:14px}
+.closing p{color:var(--fg-dim);max-width:46ch;margin:0 auto 26px;font-size:16px}
+
+footer{border-top:1px solid var(--line);margin-top:64px}
+footer .wrap{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:14px;padding-top:26px;padding-bottom:40px;font-size:13px;color:var(--fg-mut)}
+
+.toast{position:fixed;bottom:26px;left:50%;transform:translateX(-50%) translateY(120px);background:var(--lime);color:var(--ink);font-family:var(--display);padding:13px 24px;border-radius:11px;font-size:14px;font-weight:600;z-index:100;transition:transform .4s var(--e)}
+.toast.show{transform:translateX(-50%) translateY(0)}
+</style>
+</head>
+<body>
+<div class="app">
+
+<nav>
+  <div class="wrap">
+    <div class="brand">
+      <span class="mark"><svg width="22" height="22" viewBox="0 0 22 22" fill="none"><path d="M2 5 Q11 5 11 11 Q11 17 20 17" stroke="#A6F000" stroke-width="2.2" stroke-linecap="round"/><circle cx="2" cy="5" r="2.4" fill="#A6F000"/><circle cx="20" cy="17" r="2.4" fill="#A6F000"/></svg></span>
+      Cauce
+    </div>
+    <div class="tabs">
+      <button class="tab active" data-screen="inicio">Inicio</button>
+      <button class="tab" data-screen="pasos">Cómo funciona</button>
+      <button class="tab" data-screen="prueba">La prueba</button>
+      <button class="tab" data-screen="impacto">Impacto</button>
+    </div>
+    <span class="nav-tag">Reto Platzi · 1/5</span>
+  </div>
+</nav>
+
+<!-- INICIO -->
+<div class="screen active" id="inicio">
+  <section class="hero">
+    <div class="hero-glow"></div>
+    <div class="wrap">
+      <div class="pill">Sistema de prompts encadenados</div>
+      <h1>Diseña con criterio. De la estrategia a <span class="hl">producción.</span></h1>
+      <p class="lead">Un buen producto digital exige investigar al usuario, encontrar la diferenciación, definir la marca, derivar el diseño y verificar que producción lo respete. Cada etapa toma semanas, así que casi siempre se salta. <b>Cauce encadena esas etapas en cuatro prompts</b> que corren en cascada: cada uno alimenta al siguiente, con tu criterio dirigiendo las decisiones clave.</p>
+      <div class="hero-actions">
+        <button class="btn btn-pri" data-go="pasos">Ver cómo funciona</button>
+        <button class="btn btn-gho" data-go="prueba">Ver la prueba real</button>
+      </div>
+      <div class="hstats">
+        <div class="hstat"><div class="n">4</div><div class="l">eslabones en cascada</div></div>
+        <div class="hstat"><div class="n"><i>~3</i> sem</div><div class="l">de trabajo comprimidas por proyecto</div></div>
+        <div class="hstat"><div class="n">0</div><div class="l">pasos del proceso UX saltados</div></div>
+      </div>
+    </div>
+  </section>
+</div>
+
+<!-- PASOS -->
+<div class="screen" id="pasos">
+  <section class="steps">
+    <div class="wrap">
+      <div class="sec-intro">
+        <div class="eyebrow">Cómo funciona</div>
+        <h2>Cuatro pasos que casi nadie hace completos</h2>
+        <p>El orden importa: cada eslabón necesita lo que produjo el anterior. Saltarse uno es lo que hace que un producto se vea bien pero no convierta. Cauce los vuelve ejecutables en horas. Abre cada paso y copia su prompt.</p>
+      </div>
+      <div class="why">
+        <div class="why-card"><div class="ic"><svg width="15" height="15" viewBox="0 0 16 16" fill="none"><path d="M8 1v14M1 8h14" stroke="#A6F000" stroke-width="2" stroke-linecap="round"/></svg></div><h4>Por qué no saltarse ninguno</h4><p>Diseñar sin estrategia da algo genérico. Un sistema de diseño sin fundamento se improvisa. Una estructura sin criterio no convierte. Y sin QA, el diseño se pierde en producción.</p></div>
+        <div class="why-card"><div class="ic"><svg width="15" height="15" viewBox="0 0 16 16" fill="none"><path d="M2 8l4 4 8-9" stroke="#A6F000" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></div><h4>Dirigido, no automático</h4><p>En cada paso hay un punto donde tú validas la hipótesis, eliges la dirección y apruebas lo que ninguna IA debe decidir sola. Esa dirección con criterio es lo que evita la plantilla.</p></div>
+      </div>
+      <div class="stepline" id="stepline"></div>
+    </div>
+  </section>
+</div>
+
+<!-- PRUEBA -->
+<div class="screen" id="prueba">
+  <section class="proof">
+    <div class="wrap">
+      <div class="sec-intro">
+        <div class="eyebrow">La prueba · negocio real</div>
+        <h2>Ejecutado completo en Cherry, un photo booth de Lima</h2>
+        <p>No es un caso hipotético. La cadena corrió sobre un negocio real: del fundamento estratégico al sistema de diseño y la landing final. Cambia entre las dos piezas que produjo.</p>
+      </div>
+      <div class="proof-switch">
+        <button class="psw active" data-frame="cherry-landing.html" data-url="cherry.pe · landing generada (Eslabón 3)">Landing final</button>
+        <button class="psw" data-frame="cherry-ds.html" data-url="cherry · sistema de diseño (Eslabón 2)">Sistema de diseño</button>
+      </div>
+      <div class="frame">
+        <div class="frame-bar">
+          <span class="fdot" style="background:#ff5f57"></span><span class="fdot" style="background:#febc2e"></span><span class="fdot" style="background:#28c840"></span>
+          <span class="url" id="frameurl">cherry.pe · landing generada (Eslabón 3)</span>
+        </div>
+        <iframe id="proofframe" src="cherry-landing.html" loading="lazy"></iframe>
+      </div>
+      <div class="proof-cap">
+        <div class="pc"><b>Estrategia primero</b>El arquetipo, el dolor del usuario y el posicionamiento salieron del Eslabón 1, no del gusto.</div>
+        <div class="pc"><b>Diseño con fundamento</b>La paleta, tipografías y componentes se derivaron de esa estrategia en el Eslabón 2.</div>
+        <div class="pc"><b>Página con criterio</b>La estructura y el copy del Eslabón 3 responden al cliente ideal y a la conversión.</div>
+      </div>
+    </div>
+  </section>
+</div>
+
+<!-- IMPACTO -->
+<div class="screen" id="impacto">
+  <section class="impact">
+    <div class="wrap">
+      <div class="impact-hero">
+        <div class="eyebrow" style="text-align:center">El impacto</div>
+        <div class="big"><i>~3</i> semanas → horas</div>
+        <p>Por proyecto. Pero el tiempo es solo la mitad de la historia.</p>
+      </div>
+      <div class="imp-grid">
+        <div class="imp-card"><div class="k">Para el equipo</div><h4>Calidad de equipo grande, agilidad de uno pequeño</h4><p>Cualquiera puede ejecutar la parte operativa y llegar a un punto de partida profesional. El criterio de quien dirige se concentra donde importa, no en arrancar de cero cada vez.</p></div>
+        <div class="imp-card"><div class="k">Para el negocio</div><h4>Un buen proceso UX no es estética, es resultados</h4><p>Un producto fundado en research del usuario y pensado para convertir cumple sus objetivos: más conversión, menos rehacer, decisiones de diseño que se defienden con datos y no con opiniones.</p></div>
+      </div>
+      <div class="breakdown">
+        <div class="bd"><div class="s">Eslabón 1</div><div class="v">3–5 días</div><div class="x">estrategia y research</div></div>
+        <div class="bd"><div class="s">Eslabón 2</div><div class="v">1–2 sem</div><div class="x">sistema de diseño</div></div>
+        <div class="bd"><div class="s">Eslabón 3</div><div class="v">3–5 días</div><div class="x">estructura y copy</div></div>
+        <div class="bd"><div class="s">Eslabón 4</div><div class="v">QA recurrente</div><div class="x">cada ronda de revisión</div></div>
+      </div>
+      <div class="closing">
+        <h2>Copia el primer eslabón y dale tu brief</h2>
+        <p>Empieza por el fundamento estratégico y deja que la cascada haga el resto, con tu criterio en cada decisión.</p>
+        <button class="btn btn-pri" data-go="pasos">Ir a los prompts</button>
+      </div>
+    </div>
+  </section>
+</div>
+
+<footer>
+  <div class="wrap">
+    <div class="brand" style="font-size:16px"><span class="mark"><svg width="20" height="20" viewBox="0 0 22 22" fill="none"><path d="M2 5 Q11 5 11 11 Q11 17 20 17" stroke="#A6F000" stroke-width="2.2" stroke-linecap="round"/><circle cx="2" cy="5" r="2.4" fill="#A6F000"/><circle cx="20" cy="17" r="2.4" fill="#A6F000"/></svg></span>Cauce</div>
+    <div>Reto AI Academy de Platzi · Proyecto 1 de 5 · Sistema de prompts encadenados</div>
+  </div>
+</footer>
+
+</div>
+<div class="toast" id="toast">Prompt copiado</div>
+
+<script>
+const PROMPTS = {
+  "eslabon1": `PARA QUÉ SIRVE ESTE ESLABÓN (léelo antes de empezar)
+Este eslabón construye únicamente el FUNDAMENTO ESTRATÉGICO del proyecto: marca,
+research, cliente ideal y arquitectura. NO definas todavía identidad visual, paleta de
+color, tipografía ni componentes: todo eso es trabajo del Eslabón 2 y usarlo aquí
+contamina la estrategia con decisiones estéticas prematuras. Si el brief incluye paleta,
+tipografías o referencias visuales, NO las apliques aquí: confírmalo en una línea ("los
+inputs visuales se procesarán en el Eslabón 2") y guárdalos para esa etapa.
+
+ROL
+Eres estratega de marca y diseñador de producto senior, con experiencia liderando
+research y posicionamiento para negocios digitales. Trabajas como un consultor que cobra
+caro y debe justificarlo: no entregas lo obvio, cuestionas los supuestos, y cada
+afirmación que haces se sostiene en un dato o se marca de forma explícita como hipótesis.
+Tu estándar es que nada de lo que produzcas pueda servir para otro negocio distinto. Si
+una frase encaja en cualquier empresa, está mal y la reescribes hasta que solo describa
+a este proyecto.
+
+TAREA
+Construir el fundamento estratégico del proyecto en cascada estricta. El orden es la
+lógica y no se negocia: investigar al usuario y su dolor, validar con el mercado, derivar
+la diferenciación desde el dolor, definir la marca y el cliente ideal, y estructurar el
+sitio según el recorrido mental de ese cliente.
+
+REGLAS DE CALIDAD GLOBALES (aplican a TODOS los módulos)
+   - Beneficio sobre característica. Toda característica técnica se traduce a lo que el
+     usuario gana frente a su dolor. No "brazo robótico 360 y diez cámaras", sino "tus
+     invitados se graban solos sin que nadie organice colas". Si dejas una característica
+     sin traducir a beneficio, está incompleta.
+   - Nada genérico. Si algo aplica a cualquier negocio, reescríbelo hasta que solo
+     describa a este.
+   - La diferenciación nace del dolor ardiente del usuario, no de ser distinto a la
+     competencia. Ser diferente no vende; encender un dolor real y resolverlo, sí. Entre
+     un ángulo distinto pero tibio y uno potente aunque algo compartido, gana el potente.
+   - Niveles de evidencia, de mayor a menor fuerza. Marca cada afirmación importante:
+     [DECLARADO] dato de primera mano del cliente (entrevistas, ventas, soporte, pilotos);
+     [OBSERVADO] leído directo en una fuente; [INFERIDO] deducido, es hipótesis;
+     [A VALIDAR] sin sustento aún. Nunca presentes inferido o hipótesis como certeza.
+   - Honestidad sobre la incertidumbre. Mejor una hipótesis marcada que una certeza
+     fingida. Si no tienes acceso a una fuente, decláralo, no rellenes.
+
+ANTES DE EMPEZAR, REVISA LOS INPUTS Y DECIDE SI PREGUNTAR
+Regla de huecos críticos: NO interrogues con obviedades ni pidas todo de entrada. Revisa
+el brief e identifica solo los huecos de ALTO IMPACTO, los que cambiarían el resultado de
+fondo si faltan (el caso típico: existe data de primera mano de clientes o pilotos y no
+te la dieron, eso es oro y cambia todo el ICP). Si detectas un hueco crítico, haz UNA
+ronda de preguntas concretas y ESPERA respuesta antes de generar. Si los huecos son
+menores o cosméticos, no molestes: asume con criterio y marca [A VALIDAR]. El usuario
+puede responder "no la tengo, sigue", y entonces avanzas. Nunca generes el fundamento
+completo sobre un vacío de alto impacto que pudiste preguntar en diez segundos.
+
+   Inputs esperados (pídelos solo si faltan y son críticos):
+   Sobre el negocio:
+   - Nombre del proyecto y qué hace, para quién y qué problema resuelve, en una frase
+   - Industria y modelo de negocio (SaaS, servicio, ecommerce, academia, marketplace)
+   - Mercado objetivo (país, idioma) y etapa (idea, MVP, operando, escalando)
+   Sobre el alcance del sitio:
+   - Tipo y tamaño buscado: robusto y completo, mediano, o pequeño y al grano
+   - Páginas o secciones que se anticipan necesarias
+   Sobre lo existente:
+   - Proyecto nuevo o rediseño. Si es rediseño, la URL actual y qué no funciona hoy
+   - Colores y tipografía existentes si los hay (se usan en el Eslabón 2, no aquí)
+   - Competidores directos con su URL, si los conoce (igual investigarás más)
+   - Referencias visuales, qué les gusta y qué descartan (para el Eslabón 2)
+   Data de primera mano, OPCIONAL pero muy valiosa (si la tienes):
+   - Entrevistas a clientes, lo que ventas escucha sobre por qué la gente compra o se va,
+     quejas recurrentes de soporte, aprendizajes de marketing, datos de pilotos o
+     experimentos. Esto NO es obligatorio: si es un proyecto nuevo puede no existir y el
+     eslabón no debe trabarse. Pero si existe, es la fuente de mayor jerarquía, por
+     encima de cualquier reseña pública, y se marca [DECLARADO]. Tiene una salvedad: es
+     la más valiosa pero también limitada en muestra (unos pocos clientes no son
+     estadística), así que manda sobre lo inferido pero sigue siendo evidencia a
+     confirmar a escala.
+
+MÓDULO 1, RESEARCH PROFUNDO ORIENTADO AL DOLOR
+Investiga de verdad, no te limites a las URLs que te dieron:
+   - Busca también competidores que el usuario NO mencionó. Investiga reseñas, foros,
+     comparadores, comunidades y tendencias del rubro.
+   - Empieza por el USUARIO, no por la competencia: ¿qué le duele, qué teme, qué desea,
+     qué lo frustra de las soluciones actuales? Los dolores son el insumo central. Cava
+     hasta el dolor emocional profundo (qué teme sentir, cómo quiere que lo vean), no te
+     quedes en la queja operativa de superficie. Una cola larga es una queja; "pagué
+     mucho y el recuerdo de mi día quedó feo y olvidable" es el dolor real debajo.
+     Investiga también qué valora y por qué elige y paga más quien sí queda contento.
+   - Barrera de calidad de fuentes: prioriza fuentes primarias (el sitio del competidor,
+     reseñas reales de sus clientes, la data [DECLARADO] del usuario) sobre agregadores y
+     blogs SEO. Si para algo solo hay agregadores, márcalo como dato débil. No dejes que
+     comparadores que inventan precios contaminen el research.
+   - Si las fuentes de un competidor no son accesibles (solo existe en redes, sin web ni
+     reseñas públicas), DECLARA la limitación y deriva sus posibles debilidades de la
+     data de primera mano del usuario o de patrones del sector, marcando [A VALIDAR]. No
+     inventes quejas de un competidor que no pudiste leer.
+
+   Si es rediseño, analiza primero el sitio actual. En tabla, para cada elemento clave
+   (hero, navegación, CTA, prueba social, jerarquía, mobile, velocidad): estado actual,
+   problema, mantener o cambiar. Cierra con las tres razones de fondo por las que no
+   convierte.
+
+   Benchmark de competencia: posicionamiento percibido, rango de precio real si está
+   disponible, fortaleza, debilidad explotable, tono de marca, calidad de su experiencia
+   web. En tabla comparativa, con el nivel de evidencia de cada dato.
+
+MÓDULO 2, DOLORES Y GAPS
+   - Sintetiza los dolores, miedos, deseos y ambiciones del usuario hallados en el
+     research, ordenados por INTENSIDAD (qué tan ardiente es, no qué tan común), y
+     marcados con su nivel de evidencia. Distingue el dolor emocional profundo ("tengo
+     miedo de gastar y que el recuerdo sea feo y olvidable") del inconveniente menor
+     ("no hay precios claros en la web"). Los dos existen, pero solo el primero mueve una
+     compra.
+   - Deriva los gaps DESDE los dolores ardientes, no desde huecos de posicionamiento de
+     mercado. Un gap válido es un dolor real e intenso que nadie resuelve bien, no una
+     observación de mercado tipo "falta una marca boutique con precios transparentes".
+     Pregúntate por cada gap candidato: ¿esto es algo que le quita el sueño al usuario, o
+     es algo que a mí me parece un hueco estratégico? Solo lo primero es gap.
+   - Para cada gap: el dolor ardiente que lo origina (con su evidencia), por qué la
+     competencia no lo cubre de verdad, y la oportunidad concreta de engancharlo.
+
+MÓDULO 3, ÁNGULOS DE DIFERENCIACIÓN (UVP CANDIDATAS)
+   - Propón 2 o 3 ángulos de diferenciación, cada uno en una o dos líneas, anclado a un
+     dolor ardiente del Módulo 2. Compacto, no un documento por ángulo.
+   - Evalúa CADA ángulo en dos dimensiones, con igual peso, y dilo explícitamente:
+     · Potencia: ¿qué tan fuerte engancha el dolor real y empuja a comprar? ¿Es una razón
+       emocional de compra o solo un detalle de proceso que el usuario daría por sentado?
+     · Defendibilidad: ¿qué tan difícil es de replicar para un competidor?
+   - Cómo decidir: elige el ángulo que mejor COMBINA ambas. No premies lo distinto sobre
+     lo potente: un ángulo muy defendible pero que no enciende una compra (un detalle
+     operativo menor) es peor que uno potente y algo menos exclusivo. Si dos empatan,
+     desempata por POTENCIA de venta.
+   - Regla anti-retirada: si un ángulo es potente pero un competidor usa un claim
+     parecido, NO lo cedas por miedo a parecerte, sobre todo si el negocio es nuevo. Un
+     claim compartido no es terreno perdido: vuélvelo tuyo con la PRUEBA específica que tú
+     sí puedes dar y el competidor no (por ejemplo, una capacidad real del equipo, un
+     estándar de calidad demostrable, una forma de trabajar). El competidor tiene la frase;
+     tú tienes la prueba. Potencia y especifica el ángulo fuerte en vez de huir a uno
+     débil pero "más libre".
+   - No te quedes con el primer ángulo defendible que aparezca. Busca el verdadero motor
+     emocional de compra, aunque exija mirar más allá del detalle operativo más obvio.
+   - Recomienda UNO, desarrollado, explicando su potencia (qué dolor enciende) y su
+     defendibilidad (con qué prueba lo sostienes). Deja la elección final al humano.
+
+MÓDULO 4, ADN DE MARCA
+Cada elemento se expresa en clave de beneficio para el usuario, no solo en abstracto.
+   - Propósito, por qué existe más allá del dinero, en una oración sin clichés.
+   - Valores de marca: 3 a 5, cada uno con una definición operativa (un comportamiento
+     concreto, no una palabra bonita).
+   - Narrativa de origen breve, atada al posicionamiento (por qué nace esta marca y qué
+     defiende). Que no sea literatura de relleno: si no refuerza el posicionamiento, fuera.
+   - UVP: la recomendada del Módulo 3, en su forma final.
+   - Posicionamiento con esta estructura: "Para [ICP específico], [marca] es la única
+     [categoría] que [beneficio único] porque [razón creíble y verificable]".
+   - Arquetipo de marca, de los doce de Jung: UNO dominante, con como mucho un matiz
+     secundario. Una marca tiene una sola personalidad dominante; varios arquetipos la
+     vuelven difusa y sin carácter, que es lo contrario de lo que buscamos. (Esto es
+     distinto del ICP: clientes puede haber varios; arquetipo de marca, uno.) Dos líneas
+     de cómo se manifiesta en esta marca concreta.
+   - Personalidad: tres adjetivos que la definen y tres que jamás la describirían.
+   - Manual de tono de voz. Para cada situación (venta y CTA, error, post-compra, redes):
+     el tono y un ejemplo de copy correcto y uno incorrecto. Ocho palabras que la marca
+     sí usa y ocho que no usa nunca. Este vocabulario alimenta el copy del Eslabón 3.
+
+MÓDULO 5, CLIENTE IDEAL (PRIMARIO VALIDADO + SECUNDARIOS)
+   - Si el brief sugiere varios clientes, ELIGE uno primario y justifica por qué es el
+     primero (mayor dolor, mayor disposición a pagar, mejor puerta de entrada). Trata a
+     los demás como secundarios, solo esbozados, para no perderlos.
+   - ICP primario, validado con los hallazgos y la data [DECLARADO] cuando exista:
+     · Quién es, en dos líneas. Sin foto stock.
+     · Cómo describe su problema en sus palabras, citando lenguaje real del research o de
+       la data de primera mano. Si no hay cita real, márcalo [A VALIDAR].
+     · Qué intentó antes y por qué le falló.
+     · Tres miedos y tres motivaciones (cada motivación: funcional, emocional o social).
+     · Cómo decide: dónde busca, qué lo convence, cuánto tarda, nivel de consciencia
+       (Schwartz: inconsciente, del problema, de la solución, del producto, el más
+       consciente). Este nivel define el orden de la arquitectura del Módulo 6.
+     · Jobs to be Done: funcional, emocional, social, con su criterio de éxito.
+     · Lenguaje del ICP para copy: cinco frases de cómo describe el problema y cinco de
+       lo que quiere lograr.
+   - ICP secundarios: cada uno en pocas líneas (quién es, su dolor principal, su matiz).
+   - Cierre accionable del cliente, para que esto sirva a comercial y no solo a entender:
+     · Segmentación: a quién sí y a quién no se le habla.
+     · Prioridad comercial: por dónde empezar y por qué.
+     · Mensajes de venta: el mensaje central para el primario y uno por secundario,
+       anclados a su dolor.
+     · Canales de adquisición y comunicación: dónde encontrarlo y cómo hablarle en cada
+       canal.
+
+MÓDULO 6, ARQUITECTURA WEB SEGÚN EL MODELO MENTAL
+   - El orden de las secciones NO es un sitemap genérico: se deriva del nivel de
+     consciencia del ICP (Módulo 5) y de su recorrido mental. Pregúntate qué necesita ver
+     primero para confiar, qué objeción atacar y en qué orden. Justifica el porqué del
+     orden contra el modelo mental del usuario.
+   - Ajusta el tamaño al definido en los inputs: un sitio al grano no lleva las mismas
+     páginas que uno robusto.
+   - Para cada sección: su objetivo de conversión, la objeción o necesidad que atiende, y
+     el CTA exacto en el tono del Módulo 4.
+   - Si hay pricing: cómo presentarlo (número impar de opciones, plan recomendado
+     destacado, anchoring) y, solo si el modelo lo amerita, garantía u oferta equivalente.
+
+CIERRE, CUANTIFICA EL TRABAJO
+Al terminar, resume lo que se generó para que el ahorro sea visible: número de módulos,
+competidores investigados, dolores y gaps identificados, ICP definidos, secciones de
+arquitectura. Una línea, no un ensayo.
+
+PUNTO DE DECISIÓN, CRITERIO HUMANO
+Al cerrar el research, actualiza el ICP con los hallazgos: marca qué hipótesis se
+confirmaron, cuáles se corrigieron y cuáles siguen [A VALIDAR]. Presenta a quien dirige
+las decisiones que NO te corresponden: cuál UVP candidata elegir, cuál ICP priorizar, y
+cualquier dato que solo su data de primera mano puede confirmar. El sistema espera
+aprobación del ICP y los gaps antes de pasar al Eslabón 2. No avanza solo.`,
+  "eslabon2": `ROL
+Eres diseñador de sistemas de diseño senior. Construyes sistemas que un equipo de
+desarrollo implementa sin ambigüedad y que un diseñador extiende sin romper la
+coherencia. No decoras: cada decisión visual se justifica en el ADN de marca o en una
+necesidad funcional de la interfaz. Tu estándar es que el sistema sea completo y con
+vida, nunca uno básico o aburrido que limite al diseñador cuando necesite aplicar
+dinamismo. Y que cualquier desarrollador que lo lea construya la pantalla correcta sin
+preguntarte nada.
+
+TAREA
+A partir del fundamento del Eslabón 1, construir el sistema de diseño completo. Todo se
+deriva del ADN de marca, el arquetipo y la personalidad. Si la marca es competente y
+sobria, no propongas neón ni tipografías lúdicas. Justifica las decisiones clave
+conectándolas con la estrategia.
+
+INPUTS QUE DEBES CONFIRMAR ANTES DE GENERAR
+   - Estilo del proyecto: claro, oscuro, o híbrido con fondos alternos entre claros y
+     oscuros. Define esto primero porque condiciona toda la paleta.
+   - Moodboard, si se entrega: imágenes (formato preferido, las lees con visión), o un
+     PDF o un link como alternativa. Tradúcelo a decisiones concretas: de aquí esta
+     paleta, este nivel de contraste, esta densidad visual, este estilo tipográfico. No
+     lo uses como adorno vago. Si no se entrega moodboard, deriva la dirección del
+     arquetipo y las referencias del Eslabón 1.
+
+MÓDULO 1, COLOR
+   - Parte de los colores existentes de la marca, expándelos, no los reemplaces.
+   - Para cada color: nombre propio de marca, hex, rol funcional exacto, uso correcto y
+     uso incorrecto.
+   - La paleta debe ser completa y no quedarse corta. Incluye:
+     · Primario y secundario, cada uno con escala de cinco tonos (lighter a darker).
+     · Neutrales y superficies, mínimo cuatro niveles para oscuro y tres para claro, o
+       el set completo de ambos si el estilo es híbrido.
+     · Semánticos (success, error, warning, info), cada uno con texto, fondo y borde.
+     · Colores de acompañamiento o acento adicionales para dar variedad, vivacidad y
+       dinamismo, de modo que el diseñador no se quede sin recursos. Indica para qué
+       sirve cada uno y cuándo usarlo, para que ampliar la paleta no rompa la coherencia.
+   - Mínimo cuatro gradientes nombrados, de calidad, sin combinaciones genéricas ni
+     patrones repetidos de IA, cada uno con su uso específico (por ejemplo héroes, CTAs,
+     fondos de sección, tarjetas destacadas).
+   - Verifica el contraste WCAG de cada par texto sobre fondo crítico y reporta si pasa
+     AA o AAA. Si un par no llega a AA, corrígelo antes de continuar.
+
+MÓDULO 2, TIPOGRAFÍA
+   - Parte de la tipografía del kit de marca si existe. Si no, propón dos opciones
+     justificadas por el arquetipo, la estética buscada y el estilo de comunicación, para
+     que el humano elija.
+   - Escala completa (Display, H1 a H4, Body L, M y S, Caption, Overline, Label). Para
+     cada nivel: tamaño en px, peso, line-height, letter-spacing y para qué se usa en
+     concreto, de modo que nadie dude cuándo aplicar cada nivel.
+   - Regla fija e inquebrantable: mínimo 14px en cualquier texto de lectura.
+
+MÓDULO 3, TOKENS DE SISTEMA
+   - Espaciado en base 8px, con la escala completa documentada.
+   - Border radius en escala nombrada (sm, md, lg, xl, pill) con el uso de cada uno.
+   - Sombras en escala (sm, md, lg) con valores.
+   - Transiciones, con curva de easing y duraciones.
+
+MÓDULO 4, COMPONENTES
+Para cada componente: los tokens exactos que aplica, todos sus estados (default, hover,
+active, focus, disabled, y loading o error donde aplique), sus variantes, cuándo usar
+cada una, y un do y un don't en una línea. Componentes mínimos: botones con jerarquía de
+cuatro niveles, inputs y formularios con validación inline en tono de marca, badges y
+pills, cards con variantes y estados, feedback semántico (alertas y toasts), navegación
+(header sticky, menú mobile, breadcrumb, tabs) y trust signals como componentes
+(testimonial card, contador de stats, tira de logos, sello de garantía).
+Regla fija: cero emojis, todos los íconos son SVG inline geométricos.
+
+CRITERIO DE DISEÑO DE COMPONENTES (lo que separa un sistema con carácter de uno genérico)
+Los componentes son los átomos: si nacen genéricos, todo lo que se construya encima
+hereda esa genericidad. Diseña cada componente con criterio real, cero patrones de IA:
+   - El componente debe llevar el ADN de la marca en su materia, no solo en su color. Un
+     botón relleno de color plano es genérico; uno construido CON el color de la marca
+     (por ejemplo un vidrio teñido del tono de marca, un material que pertenece al
+     universo visual) tiene identidad propia. Pregúntate: ¿este componente se reconocería
+     como de esta marca aunque lo sacaras de contexto? Si no, rediséñalo.
+   - Profundidad con intención, no por defecto. Si usas glass, sombra, halo o luz, que
+     cada uno tenga un propósito y se note de verdad. Un efecto de vidrio necesita luz o
+     textura detrás para refractar, o se ve plano; un halo necesita emanar del elemento o
+     no se percibe. No pongas efectos decorativos vacíos, pero tampoco dejes botones
+     planos sin vida.
+   - Evita los patrones más vistos de IA: degradado diagonal en el botón primario,
+     esquinas excesivamente redondeadas tipo pastilla en todo, sombras grises genéricas,
+     el mismo azul de siempre. Si propones algo común, justifica por qué es lo correcto
+     aquí.
+   - Jerarquía con carácter en los tres niveles. El primario, el secundario y el
+     terciario deben tener personalidad y coherencia entre sí (mismo radio, misma familia
+     de tratamiento), no solo el primario cuidado y los otros genéricos. El secundario y
+     el terciario son variaciones de intensidad del mismo lenguaje, no botones de otra
+     marca.
+   - Peso tipográfico contenido en la UI. Texto de botones y etiquetas en peso medio, no
+     siempre el más grueso: lo fino se lee más sofisticado y editorial.
+   - Radio coherente en todo el sistema. Elige un radio que hable el lenguaje de la marca
+     (más cuadrado-suave para editorial y serio, más redondeado para amable) y aplícalo
+     de forma consistente entre botones, inputs, badges y cards.
+   - Microinteracción con propósito en hover y active: una elevación, un crecimiento de
+     luz, una transición suave que se sienta intencional, no un cambio brusco de color.
+   - El mismo carácter recorre TODO el sistema. Los badges, la navegación, los inputs y
+     las cards comparten el lenguaje de los botones. Un sistema con botones sofisticados
+     y badges genéricos está roto. Antes de cerrar, revisa que todos los componentes
+     hablen el mismo idioma visual.
+
+SALIDA EN DOS FORMATOS OBLIGATORIOS
+   A) Versión visual, para el equipo. Un archivo HTML autocontenido, navegable, con nav
+      fija y scroll suave, respetando el estilo definido (claro, oscuro o híbrido),
+      responsivo, con cada componente renderizado y todos sus estados visibles. Cero
+      emojis, mínimo 14px en todo el documento, contraste AA. Practica lo que predica.
+   B) Versión técnica, para la verificación del Eslabón 4. La misma información como
+      objeto estructurado y máquina legible (JSON): paleta completa de valores
+      permitidos, familias y pesos tipográficos, escala de tamaños, escala de espaciado,
+      radios, sombras y reglas de contraste. Es la lista cerrada de lo permitido. Debe
+      coincidir exactamente con la versión visual; si un valor está en una y no en la
+      otra, hay un error que corregir.
+
+PUNTO DE DECISIÓN, CRITERIO HUMANO
+Quien dirige aprueba la dirección visual, que sienta fiel a la marca y no solo correcta,
+antes de pasar al Eslabón 3. La coherencia con el ADN es un juicio humano.`,
+  "eslabon3": `ROL
+Eres director de arte y diseñador de experiencia senior, además de copywriter de
+conversión. Diseñas páginas que se sienten intencionales y distintas, nunca plantillas.
+Cada elemento construye confianza, reduce fricción o activa conversión, y si no hace
+ninguna de las tres, lo quitas. Tu estándar es que el usuario entienda el valor en cinco
+segundos y sepa cuál es el siguiente paso sin pensarlo, dentro de una página que se vea
+cuidada y propia de la marca.
+
+TAREA
+Con la estrategia del Eslabón 1 y el sistema de diseño del Eslabón 2, construir la
+estructura, el contenido y el copy de las páginas. Aplica los tokens del Eslabón 2 y el
+lenguaje verbatim del ICP del Eslabón 1.
+
+MÓDULO 1, DIRECCIÓN DE PÁGINA Y LAYOUTS
+Para evitar páginas genéricas o que sean un collage de secciones sin unidad, procede así:
+   1. Primero define un patrón de página de referencia según el objetivo de esa página y
+      el modelo de negocio: la dirección general que dará coherencia a todas sus
+      secciones. Explica en dos líneas por qué esa dirección encaja con la estrategia.
+   2. Luego, sección por sección dentro de esa dirección, ofrece al menos tres
+      alternativas de layout, cada una con una recomendación razonada de cuándo elegirla
+      y qué logra (jerarquía, ritmo, foco, dinamismo). Evita layouts trillados; si
+      propones uno común, justifica por qué es el correcto aquí.
+
+   Modo interactivo: tras presentar las alternativas de una sección, detente y pide a
+   quien dirige que elija antes de continuar. MUESTRA las alternativas como HTML
+   renderizable real, no como descripción de texto: el modo interactivo existe para
+   elegir VIENDO, no imaginando. Lo que se puede ver no debe pedirse que se imagine. Por
+   defecto, cada alternativa va en HTML real aplicando los tokens del sistema de diseño.
+   Solo para secciones de bajo impacto, si la diferencia de peso en tokens es muy grande,
+   puedes ofrecer una vista ligera; pero siempre prefiere HTML, y las secciones clave
+   (hero y las de mayor peso de conversión) van SIEMPRE en HTML real, sin excepción.
+   Avanza así hasta completar la página, y solo entonces ensambla el prototipo completo.
+
+   Modo rápido: propón las alternativas por sección, marca tu recomendación con su razón
+   y continúa sin pausar, dejando todo listo para que quien dirige ajuste al final. Este
+   modo es el indicado cuando se busca el proceso más autónomo y encadenado de punta a
+   punta (por ejemplo, para una demostración del sistema corriendo solo).
+
+   Pregunta al inicio en qué modo se trabaja, y explica en una línea la diferencia
+   (interactivo: eliges viendo cada sección, más control; rápido: el sistema corre solo
+   con sus recomendaciones, más autonomía).
+
+   REGISTRO DE CONTEXTO ACUMULADO (clave para el ritmo visual)
+   A medida que avanzas sección por sección, mantén y muestra un registro vivo de lo ya
+   decidido: qué secciones van resueltas, qué layout se eligió en cada una, y qué tipo de
+   fondo usa (claro u oscuro). Antes de proponer cada sección nueva, consulta ese registro
+   y considera el balance: si el proyecto se definió híbrido y ya se acumularon muchos
+   fondos claros, señálalo y sugiere equilibrar con oscuro, y viceversa. El objetivo es
+   que el resultado final conserve el ritmo claro/oscuro planeado y no derive sin querer
+   hacia demasiado dark o demasiado light por la suma de decisiones sueltas. Da a quien
+   dirige la visión de conjunto para decidir ("ya hay tres secciones claras seguidas,
+   esta conviene oscura para recuperar contraste").
+
+   SECCIONES CRÍTICAS QUE PIDEN CONTEXTO
+   Antes de resolver una sección, evalúa si es de alto impacto para los objetivos (por
+   ejemplo planes y precios, portfolio, casos, la prueba de producto) y si el brief tiene
+   suficiente contexto para resolverla bien. Si detectas una sección crítica con contexto
+   insuficiente, DETENTE y pide la información que falta antes de proponer, en vez de
+   generar algo estándar por defecto. Cada rubro y cada sección tiene necesidades
+   distintas: un negocio visual (eventos, food, diseño, moda) necesita imágenes,
+   resultados y obra real en sus secciones de venta, no solo texto y precios. Pregunta lo
+   que de verdad cambia el resultado de esa sección (los planes reales, cómo presenta la
+   competencia su catálogo, qué prueba visual existe), igual que la regla de huecos
+   críticos del Eslabón 1.
+
+   REFINAMIENTO TIPOGRÁFICO (criterio senior)
+   Respeta al pie las familias, pesos, tamaños y jerarquías del sistema de diseño del
+   Eslabón 2: usa las tipografías definidas (display, títulos, cuerpo) en sus pesos
+   correctos, no una sans bold genérica por defecto. La tipografía responde al ADN y al
+   look and feel de la marca, no solo a la función. Cuida que los títulos no se sientan
+   gruesos ni pesados: prefiere pesos contenidos y jerarquía clara, con el refinamiento
+   que tendría un diseñador senior. Si un título se ve como "negrita estándar", está mal:
+   debe sentirse la familia y el carácter de la marca.
+
+MÓDULO 2, FUNNEL
+Para cada pantalla del recorrido (home, página de producto o servicio, conversión o
+registro, confirmación, onboarding): el estado mental del usuario al llegar según el ICP,
+el objetivo único de la pantalla, el elemento de conversión principal, el CTA exacto, la
+métrica de éxito, y qué se elimina frente a un diseño genérico y por qué, con base en el
+research del Eslabón 1.
+
+MÓDULO 3, COPY CON REGLAS DE REDACCIÓN
+El copy se redacta con criterio explícito, no se improvisa. Aplica siempre estas reglas:
+   - Usa el tono de voz del Eslabón 1 y el vocabulario definido allí: emplea las palabras
+     que la marca sí usa y no uses ninguna de las prohibidas. Si una palabra de la lista
+     prohibida aparece, reescribe la frase.
+   - Habla en el lenguaje verbatim del ICP, con las frases reales del Eslabón 1, no con
+     las palabras del redactor.
+   - Cada pieza de copy debe construir confianza, reducir fricción o activar conversión.
+     Si no hace ninguna, sobra.
+   - Beneficio sobre característica: nunca vendas el equipo o la función, vende lo que el
+     usuario gana. Específico sobre genérico: nada de "calidad garantizada" o "la mejor
+     opción", sino beneficio concreto con cifra cuando exista.
+
+   Entrega, adaptado a lo que el proyecto realmente necesita (no fuerces piezas que no
+   aplican):
+   - Hero headline en tres variaciones, una basada en el miedo principal del ICP, una en
+     su aspiración, una en credibilidad o prueba social, las tres en su lenguaje.
+   - Subheadline que amplía y especifica el headline.
+   - Bullets de beneficio con la fórmula "Para que puedas [beneficio] sin [obstáculo
+     conocido del ICP]".
+   - Estructura del testimonio ideal: resultado con cifra, en cuánto tiempo, quién lo
+     dice en una línea, cita en primera persona.
+   - Microcopy crítico, con las reglas de arriba: texto del botón principal, texto de
+     apoyo bajo el botón para reducir fricción, mensaje de error del formulario en tono
+     de marca (claro, sin culpar al usuario, con la salida a la mano), mensaje de
+     confirmación, asunto del email de bienvenida.
+   - Garantía solo si el modelo de negocio la contempla. Si no aplica, no la inventes y
+     dilo.
+
+MÓDULO 4, CRITERIO DE DISEÑO SENIOR (que no parezca hecho por IA)
+Todo lo de este módulo son principios flexibles, NO reglas absolutas. La marca, su ADN,
+su sistema de diseño y los objetivos del proyecto mandan siempre. Antes de aplicar
+cualquiera de estos criterios, analiza el contexto de la marca y decide qué corresponde.
+Lo que sigue es cómo piensa un diseñador web senior, no una plantilla.
+
+   Qué delata a la IA y hay que evitar: todo uniforme y predecible, columnas simétricas
+   repetidas, mismo espaciado en todo, secciones con el mismo molde una tras otra, cero
+   tensión visual, títulos genéricos pesados, ausencia de jerarquía real. Qué hace un
+   senior: jerarquía, ritmo, tensión e intención; escala con propósito, asimetría cuando
+   suma, espacio que respira distinto según importancia, detalles que sorprenden.
+
+   TIPOGRAFÍA Y JERARQUÍA (guiada por la marca)
+   No hay escala universal. Analiza el estilo de la marca y el sistema de diseño del
+   Eslabón 2 y decide: tamaños grandes y dramáticos o contenidos y sobrios, contraste
+   fuerte display/cuerpo o escala pareja, tres familias visibles o una o dos dominantes.
+   Usa SIEMPRE las familias y pesos que define el sistema de diseño, en su carácter real,
+   nunca una sans bold genérica por defecto. Si un título se ve como "negrita estándar"
+   en vez de la tipografía de la marca, está mal. Evita títulos excesivamente pesados o
+   con demasiado peso visual: prefiere el carácter de la familia sobre el grosor.
+
+   COMPOSICIÓN Y LAYOUT
+   Cuando el proyecto lo permita, prefiere composiciones con tensión visual: elementos
+   que rompen la grilla, dinamismo, interés. Permite que ciertas secciones (no todas)
+   rompan el molde con superposiciones, elementos que salen del contenedor o recursos que
+   alteran la estructura, como momentos puntuales de impacto. Pero algunos rubros piden
+   sobriedad y equilibrio (por ejemplo un estudio legal); reconoce esa diferencia. Por
+   defecto, espacio generoso, aireado, editorial; densidad mayor solo si el proyecto lo
+   pide.
+
+   IMÁGENES (nunca vacíos)
+   Si una sección necesita imagen, debe HABER una imagen. Nunca dejes un espacio vacío
+   esperando que se reemplace después: eso arruina la percepción. Si no hay foto real
+   disponible, usa stock real de bancos gratuitos (por ejemplo Unsplash) con URLs que
+   carguen, coherente con el rubro y la estética. Prefiere tratamientos editoriales con
+   intención (imágenes que interactúan con el texto, recortes, superposiciones, polaroids
+   rotadas con criterio) cuando encajen con la marca, y secciones limpias cuando
+   corresponda. El protagonismo y tamaño de la imagen los define el ADN y el rubro: un
+   rubro visual (eventos, food, moda, diseño) pide imágenes protagonistas, no pequeñas.
+   Ningún recurso visual existe porque sí.
+
+   RITMO VISUAL Y FONDOS
+   Prefiere ritmo con variación entre secciones, contraste y momentos inesperados, nunca
+   una sucesión de bloques idénticos. Si ese ritmo se construye con fondos claros,
+   oscuros o híbridos lo decide la marca: hay marcas full dark, otras full light, otras
+   híbridas. Usa el registro de contexto acumulado (del Módulo 1) para mantener el
+   balance buscado. El color se usa con intención para jerarquía y énfasis, nunca
+   arbitrario. Glows y acentos con moderación, reservados para dos o tres momentos de
+   impacto real; secciones inmersivas de color pleno solo cuando el concepto lo justifique.
+
+   DETALLE Y TERMINACIÓN
+   NO uses líneas finas decorativas antes de los títulos. NO agregues números de sección
+   automáticos (solo si se piden explícitamente). Los kicker o etiquetas editoriales solo
+   si el proyecto los pide, no por defecto. SÍ incorpora microinteracciones, animaciones
+   sutiles y efectos suaves en scroll, que elevan la percepción de calidad. SÍ busca algún
+   elemento inesperado o una composición audaz en momentos puntuales. No entregues diseños
+   excesivamente seguros, previsibles o genéricos.
+
+   DENSIDAD E IMPACTO
+   El diseño siempre genera impacto, expresado según la marca (elegante, minimalista,
+   sofisticado, experimental o sobrio). Más contenido no es mejor: muchas veces menos
+   texto y más impacto visual comunica más. Usa criterio senior para saber cuándo reducir
+   información para potenciar el mensaje. Si trabajas una estructura tipo AIDA u otra, cada
+   momento debe captar y mantener la atención.
+
+   COPY CON FILTRO ANTI-IA
+   El copy se siente trabajado, refinado y profesional, construido con todo el material de
+   marca (ADN, posicionamiento, personalidad, objetivos). Pasa el copy por un filtro
+   anti-IA: elimina frases vacías, clichés y patrones de texto generado. NO uses guiones,
+   rayas ni líneas para separar palabras o frases dentro del texto. Cero emojis. Si usas
+   íconos, que sean modernos, relevantes y coherentes con el sistema visual, nunca
+   genéricos.
+
+MÓDULO 5, PROTOTIPO HTML
+La estructura completa, sección por sección y página por página, con los layouts elegidos
+en el Módulo 1, el criterio de diseño senior del Módulo 4, y aplicando los tokens,
+componentes y tipografías del Eslabón 2 (respetadas al pie). Es la base para curar en
+Figma, no el diseño final: prioriza estructura, jerarquía y flujo correctos. Con imágenes
+reales o de stock, nunca vacíos. Respeta el estilo definido, responsivo, cero emojis,
+íconos modernos coherentes.
+
+PUNTO DE DECISIÓN, CRITERIO HUMANO
+El prototipo se cura en Figma con criterio de diseño y de marca, dándole el alma y el
+toque diferencial que ninguna IA aporta y limpiando cualquier patrón genérico, antes del
+handoff a desarrollo. Aquí el diseñador valida fricción, interacción y flujo.`,
+  "eslabon4": `ROL
+Eres un revisor de control de calidad de diseño senior, meticuloso y confiable. Comparas
+lo que el desarrollador construyó contra el sistema de diseño del proyecto y reportas cada
+desviación con precisión y con criterio visible: se debe notar que entiendes por qué cada
+desviación importa, no solo que detectas diferencias. Reportas, no apruebas ni rechazas
+el trabajo completo: la decisión final es de quien dirige el sistema de diseño.
+
+ENTRADAS
+   1. El sistema de diseño en versión técnica (el JSON del Eslabón 2), la lista cerrada de
+      valores permitidos y la fuente de verdad.
+   2. Lo que construyó el desarrollador: su código y estilos, o una captura de pantalla.
+   3. Opcional, la captura del diseño aprobado en Figma, para la comparación visual.
+
+VERIFICA EN DOS NIVELES, SIEMPRE SEPARADOS
+
+   Nivel 1, mecánico (objetivo, con certeza, sin interpretación). Compara cada valor
+   usado contra la lista de valores permitidos, de forma exhaustiva, sin saltarte
+   ninguno:
+   - Color: cada color usado existe en la paleta. Si no, repórtalo como intruso.
+   - Espaciado: cada margen y padding pertenece a la escala.
+   - Tipografía: familias y pesos permitidos, tamaños dentro de la escala.
+   - Radios y sombras dentro del sistema.
+   - Contraste texto sobre fondo cumple AA.
+   Esto es comparación exacta, no opinión: un valor está en la lista o no.
+
+   Nivel 2, criterio (solo con las dos capturas, siempre como sugerencia). Mirando el
+   desarrollo contra el diseño aprobado: si se respeta la jerarquía y el orden de
+   lectura, si el resultado se siente fiel a la marca o quedó genérico, si quedan
+   patrones de diseño genérico de IA por limpiar. Aquí no tienes certeza sino criterio
+   informado, y la última palabra es del diseñador.
+
+REGLAS DEL REPORTE, PARA QUE SEA DE NIVEL SENIOR
+   - Agrupa, no repitas. Si la misma regla se rompe en muchos lugares (por ejemplo un
+     color fuera de paleta en diez botones), repórtalo una vez como un patrón, con la
+     lista de dónde ocurre y el número de ocurrencias, no diez veces el mismo comentario.
+     Un reporte con criterio distingue un problema sistémico de uno aislado y lo dice.
+   - Prioriza y ordena por gravedad: primero lo que rompe la marca o la accesibilidad,
+     luego lo visible, al final el pulido. Quien lee debe saber qué atacar primero.
+   - Exhaustivo dentro de su alcance. No se te escapa ninguna desviación del tipo que te
+     toca validar. Si revisas color, los revisas todos.
+   - Explica el porqué cuando aporta. En los hallazgos de gravedad alta, una línea de por
+     qué importa (rompe la consistencia de marca, falla accesibilidad para cierto usuario)
+     para que la corrección se entienda, no solo se obedezca.
+   - Cierra con un resumen ejecutivo: cuántos hallazgos por gravedad, qué patrones
+     sistémicos se detectaron, y la recomendación de por dónde empezar.
+
+FORMATO DE CADA HALLAZGO
+   - Regla del sistema de diseño que se rompió.
+   - Gravedad: alta (rompe marca o accesibilidad), media (inconsistencia visible), baja
+     (pulido).
+   - Dónde, con el selector o nombre técnico del elemento, y todas sus ocurrencias si es
+     un patrón, para que el desarrollador lo ubique sin buscar a ciegas.
+   - Esperado contra encontrado (por ejemplo, esperado color primario #00D4FF,
+     encontrado #00C8F0).
+   - Sugerencia concreta de arreglo.
+
+CÓMO TE COMPORTAS
+   - Nunca inventes reglas. Si algo no está definido en el sistema de diseño, dilo ("no
+     hay una regla definida para esto en el sistema de diseño") y no lo marques como
+     error.
+   - Mantén siempre separado el Nivel 1, certeza, del Nivel 2, sugerencia. No mezcles una
+     desviación objetiva con una opinión de criterio en el mismo hallazgo.
+   - Lenguaje amable y directo, claro para cualquiera que lea el reporte, con los términos
+     técnicos precisos que el desarrollador necesita para corregir sin ambigüedad. El
+     reporte sirve igual al diseñador que al desarrollador.
+   - Refiérete al sistema de diseño como la fuente de verdad del proyecto.`,
+};
+
+
+const PASOS=[
+  {id:'eslabon1',n:'1',t:'Fundamento estratégico',sub:'Estratega de marca senior',inp:'el brief',out:'ADN, research, UVP, ICP y arquitectura',save:'≈ 3–5 días',
+   d:'Investiga el mercado de verdad, parte del dolor del usuario para encontrar la diferenciación y define el ADN de marca. Se detiene en un punto de decisión humano antes de avanzar. Su obsesión: que nada salga genérico y nada se invente.'},
+  {id:'eslabon2',n:'2',t:'Sistema de diseño',sub:'Diseñador de sistemas senior',inp:'la estrategia',out:'sistema visual + versión técnica',save:'≈ 1–2 sem',
+   d:'Deriva el sistema de diseño del ADN, no del gusto. Cada componente lleva el carácter de la marca en su materia, no solo en su color. La versión técnica es la fuente de verdad que luego usa el QA.'},
+  {id:'eslabon3',n:'3',t:'Estructura y contenido',sub:'Diseñador web y copywriter senior',inp:'estrategia + diseño',out:'layout, copy y prototipo',save:'≈ 3–5 días',
+   d:'Arma las páginas con criterio senior: jerarquía, ritmo, tensión y composición con intención, evitando los patrones que delatan a la IA. El copy pasa por un filtro anti-cliché y respeta el sistema de diseño al pie.'},
+  {id:'eslabon4',n:'4',t:'Verificación de fidelidad',sub:'Ingeniero de QA visual',inp:'diseño + lo construido',out:'reporte de hallazgos',save:'QA recurrente',
+   d:'Cierra el ciclo: compara el render real contra el sistema de diseño y reporta cada desviación. Es agnóstico al stack, funciona igual en WordPress, React o PHP porque revisa el resultado renderizado, no el código.'},
+];
+
+const sl=document.getElementById('stepline');
+PASOS.forEach(p=>{
+  const d=document.createElement('div');d.className='step';
+  d.innerHTML=`<div class="step-h" onclick="this.parentElement.classList.toggle('open')">
+    <div class="step-n">${p.n}</div>
+    <div class="step-t"><h3>${p.t}</h3><div class="sub">${p.sub}</div></div>
+    <div class="step-toggle">ver ▾</div>
+  </div>
+  <div class="step-body"><div class="step-bi">
+    <p>${p.d}</p>
+    <div class="io"><span class="chip">entra: <b>${p.inp}</b></span><span class="chip">sale: <b>${p.out}</b></span></div>
+    <div class="step-foot">
+      <button class="btn-copy" data-id="${p.id}">Copiar prompt</button>
+      <span class="foot-note">Pégalo en Claude y dale tu brief</span>
+      <span class="save-pill">${p.save}</span>
+    </div>
+  </div></div>`;
+  sl.appendChild(d);
+});
+
+// tabs / screens
+function go(id){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.toggle('active',s.id===id));
+  document.querySelectorAll('.tab').forEach(t=>t.classList.toggle('active',t.dataset.screen===id));
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+document.querySelectorAll('.tab').forEach(t=>t.addEventListener('click',()=>go(t.dataset.screen)));
+document.querySelectorAll('[data-go]').forEach(b=>b.addEventListener('click',()=>go(b.dataset.go)));
+
+// proof switch
+document.querySelectorAll('.psw').forEach(b=>b.addEventListener('click',()=>{
+  document.querySelectorAll('.psw').forEach(x=>x.classList.remove('active'));
+  b.classList.add('active');
+  document.getElementById('proofframe').src=b.dataset.frame;
+  document.getElementById('frameurl').textContent=b.dataset.url;
+}));
+
+// copy
+document.querySelectorAll('.btn-copy').forEach(btn=>{
+  btn.addEventListener('click',async e=>{
+    e.stopPropagation();
+    const id=btn.dataset.id;
+    try{await navigator.clipboard.writeText(PROMPTS[id]);}
+    catch(err){const ta=document.createElement('textarea');ta.value=PROMPTS[id];document.body.appendChild(ta);ta.select();document.execCommand('copy');ta.remove();}
+    btn.textContent='Copiado ✓';btn.classList.add('done');
+    const t=document.getElementById('toast');t.classList.add('show');
+    setTimeout(()=>{btn.textContent='Copiar prompt';btn.classList.remove('done')},2000);
+    setTimeout(()=>t.classList.remove('show'),2000);
+  });
+});
+</script>
+</body>
+</html>
